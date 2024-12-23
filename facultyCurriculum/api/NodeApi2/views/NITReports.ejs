@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Report</title>
+    <!-- Power BI CSS (optional, for styling) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/powerbi-client/2.15.0/styles/powerbi.css">
+</head>
+<body>
+    <h1>My Power BI Report</h1>
+    <div id="reportContainer"></div>
+
+    <!-- Power BI JavaScript SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/powerbi-client/2.15.0/powerbi.min.js"></script>
+    <script>
+        window.onload = function() {
+            // Embed Power BI report
+            const config = <%= JSON.stringify(biconfig) %>;
+            const reportContainer = document.getElementById('reportContainer');
+            const report = powerbi.embed(reportContainer, config);
+        };
+    </script>
+</body>
+</html>

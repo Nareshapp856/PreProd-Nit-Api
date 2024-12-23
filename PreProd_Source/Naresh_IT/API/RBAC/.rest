@@ -1,0 +1,9 @@
+### Student Actions
+
+POST http://49.207.10.134011/auth/login
+Content-Type: application/json
+
+{
+    "email": "test",
+    "password": "mypassword"
+}

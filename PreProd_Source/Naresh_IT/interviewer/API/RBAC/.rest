@@ -1,0 +1,9 @@
+### Student Actions
+
+POST http://localhost:4011/auth/login
+Content-Type: application/json
+
+{
+    "email": "test",
+    "password": "mypassword"
+}

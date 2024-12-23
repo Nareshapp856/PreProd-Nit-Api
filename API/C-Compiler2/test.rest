@@ -1,0 +1,7 @@
+POST http://localhost:4001/
+Content-Type: application/json
+
+{
+  "code": "#include <stdio.h>\n\nint main() {\n    int num1, num2;\n\n    // Read input from scanf\n    printf(\"Enter num1: \");\n    scanf(\"%d\", &num1);\n\n    printf(\"Enter num2: \");\n    scanf(\"%d\", &num2);\n\n    // Print the inputs\n    printf(\"num1: %d\\n\", num1);\n    printf(\"num2: %d\\n\", num2);\n\n return 0;\n}",
+  "args": [4,4]
+}
