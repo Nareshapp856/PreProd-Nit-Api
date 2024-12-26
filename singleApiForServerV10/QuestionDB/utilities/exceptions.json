@@ -1,0 +1,79 @@
+{
+    "InvalidAuthRequest": {
+    "code": "1001",
+    "httpCode": "404",
+    "message": "",
+    "sendNotification": false,
+    "log": "log"
+    },
+    "InvalidPassword": {
+    "code": "1003",
+    "httpCode": "401",
+    "message": "",
+    "sendNotification": false,
+    "log": "log"
+    },
+    "DuplicateEntry": {
+    "name": "DuplicateEntry",
+    "code": "4007",
+    "message": "{message}",
+    "http_code": "400",
+    "send_notification": "false"
+    },
+    "JsonWebTokenValidationError": {
+    "name": "JsonWebTokenValidationError",
+    "code": "5013",
+    "message": "Token does not exists",
+    "http_code": "402",
+    "send_notification": "false"
+    },
+    "GeneralError": {
+    "name": "GeneralError",
+    "code": "1099",
+    "message": "I'm sorry, something went wrong on our end. If it happens again send us feedback and we will get back to you asap.",
+    "http_code": "400",
+    "send_notification": "false"
+    },
+    "AuthorizationFailed": {
+    "code": "1002",
+    "httpCode": "401",
+    "message": "",
+    "sendNotification": false,
+    "log": "log"
+    },
+    "ValidationError": {
+    "code": "1004",
+    "httpCode": "400",
+    "message": "",
+    "sendNotification": false,
+    "log": "log"
+    },
+    "ObjectNotFound": {
+    "code": "1005",
+    "httpCode": "404",
+    "message": "",
+    "sendNotification": "false",
+    "log": "log"
+    },
+    "ObjectAlreadyExist": {
+    "code": "1010",
+    "httpCode": "404",
+    "message": "",
+    "sendNotification": "false",
+    "log": "log"
+    },
+    "AuthenticationFailed": {
+    "code": "1006",
+    "httpCode": "401",
+    "message": "Invalid user email or password.",
+    "sendNotification": "false",
+    "log": "info"
+    },
+    "UnKnownError": {
+    "code": "1009",
+    "httpCode": "500",
+    "message": "Server internal error.",
+    "sendNotification": "false",
+    "log": "error"
+    }
+    }
