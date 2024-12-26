@@ -29,6 +29,7 @@ exports.registerInterviewer = async (req, res) => {
       technologies,
       createdBy = "Admin",
       type,
+      batch,
     } = req.body;
 
     const _query = `EXEC [dbo].[RegisterInterviewer_v1] 
@@ -40,7 +41,8 @@ exports.registerInterviewer = async (req, res) => {
       @Mode=@mode, 
       @Technologies=@technologies, 
       @CreatedBy=@createdBy,
-      @type=@type`;
+      @type=@type
+      @batch= @batchId`;
 
     const sqlParams = [
       name,
@@ -52,6 +54,7 @@ exports.registerInterviewer = async (req, res) => {
       technologies?.join(", ") || "",
       createdBy,
       type,
+      batch,
     ];
 
     const sqlTypesArray = [
@@ -64,6 +67,7 @@ exports.registerInterviewer = async (req, res) => {
       sqlTypes.varchar, // Technologies
       sqlTypes.varchar, // CreatedBy
       sqlTypes.varchar,
+      sqlTypes.int, // BatchID
     ];
 
     const result = await inputQuery(
@@ -78,18 +82,17 @@ exports.registerInterviewer = async (req, res) => {
         "technologies",
         "createdBy",
         "type",
+        "batchId",
       ],
       sqlTypesArray,
       sqlParams
     );
 
-    res
-      .status(201)
-      .json({
-        message: `${
-          type.charAt(0).toUpperCase() + type.slice(1)
-        } registered successfully.`,
-      });
+    res.status(201).json({
+      message: `${
+        type.charAt(0).toUpperCase() + type.slice(1)
+      } registered successfully.`,
+    });
   } catch (error) {
     console.error("Error registering interviewer:", error);
 

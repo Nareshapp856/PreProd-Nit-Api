@@ -8314,6 +8314,7 @@ app.get("/api/fetchBatchIdByFacultyId", async (req, res) => {
     await sql.connect(sqlConfig);
 
     const requestData = req.query;
+
     const { facultyId } = requestData;
 
     const result =
@@ -8326,6 +8327,7 @@ app.get("/api/fetchBatchIdByFacultyId", async (req, res) => {
       console.log("Stored procedure executed successfully:", recordsetData);
 
       res.status(200).json(recordsetData);
+      console.log("requestData", requestData);
     } else {
       // Handle the case where the recordset is empty or undefined
       console.log(
