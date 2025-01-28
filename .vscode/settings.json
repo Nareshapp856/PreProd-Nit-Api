@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/0a3a5498-2b28-4870-ab7a-82b7062ef669/resourceGroups/NareshItHyd/providers/Microsoft.Web/sites/nareshitadminapi",
+    "appService.deploySubpath": "AdminApi"
+}
