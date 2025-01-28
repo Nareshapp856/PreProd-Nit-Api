@@ -1,0 +1,535 @@
+const express = require("express");
+const dataAccess = require("../data-access");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+const { MAX } = require("mssql");
+const { Console } = require("console");
+const { Module, builtinModules } = require("module");
+
+const router = express.Router();
+
+// Set up multer for handling multipart/form-data
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+router.get("/fetch_technologies", async (req, res) => {
+  try {
+    const { recordsets } =
+      await dataAccess.query`SELECT * FROM Technologies where IsActive=1`;
+
+    res.status(200).json({ data: recordsets?.[0] || [] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "something went wrong",
+      message: "error trying to fetch data from database",
+    });
+  }
+});
+
+router.get("/fetch_modules/:technologyId", async (req, res) => {
+  try {
+    const { technologyId } = req.params;
+
+    const { recordset } = await dataAccess.query(
+      `SELECT * FROM Modules WHERE TechnologyID = ${technologyId} AND IsActive=1`
+    );
+
+    res.status(200).json({
+      data: recordset || [],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "something went wrong",
+      message: "error trying to fetch data from database",
+    });
+  }
+});
+
+router.get("/fetch_topics/:moduleId", async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+
+    const { recordset } = await dataAccess.query(
+      `SELECT * FROM Topics WHERE ModuleID = ${moduleId} AND IsActive=1`
+    );
+
+    res.status(200).json({
+      data: recordset || [],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "something went wrong",
+      message: "error trying to fetch data from database",
+    });
+  }
+});
+
+router.get("/fetch_subtopics/:topicId", async (req, res) => {
+  try {
+    const { topicId } = req.params;
+
+    const { recordset } = await dataAccess.query(
+      `SELECT * FROM SubTopic WHERE TopicID = ${topicId} AND IsActive=1`
+    );
+
+    res.status(200).json({
+      data: recordset || [],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "something went wrong",
+      message: "error trying to fetch data from database",
+    });
+  }
+});
+
+router.post("/technology_Crud", async (req, res) => {
+  try {
+    const master = req.body;
+    console.log(req.body);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_InsertUpdateDelete_Technology]`,
+      [
+        { name: "TechnologyID", value: master.technologyID },
+        { name: "TechnologyName", value: master.technologyName },
+        { name: "Description", value: master.description },
+        { name: "ProgramCode", value: master.programCode },
+        { name: "Query", value: master.query },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/module_Crud", async (req, res) => {
+  try {
+    const master = req.body;
+    console.log(req.body);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_InsertUpdateDelete_Modules]`,
+      [
+        { name: "TechnologyID", value: master.technologyID },
+        { name: "ModuleID", value: master.moduleID },
+        { name: "ModuleName", value: master.moduleName },
+        { name: "Description", value: master.description },
+        { name: "Query", value: master.query },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/topic_Crud", async (req, res) => {
+  try {
+    const master = req.body;
+    console.log(req.body);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_InsertUpdateDelete_Topics]`,
+      [
+        { name: "ModuleID", value: master.moduleID },
+        { name: "TopicID", value: master.topicID },
+        { name: "TopicName", value: master.topicName },
+        { name: "Description", value: master.description },
+        { name: "Query", value: master.query },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/subTopic_Crud", async (req, res) => {
+  try {
+    const master = req.body;
+    console.log(req.body);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_InsertUpdateDelete_SubTopics]`,
+      [
+        { name: "TopicID", value: master.topicID },
+        { name: "SubTopicID", value: master.subTopicID },
+        { name: "SubTopicName", value: master.subTopicName },
+        { name: "Query", value: master.query },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post(
+  "/mcqQuestionsALL_formData",
+  upload.array("images"),
+  async (req, res) => {
+    try {
+      const master = req.body;
+      const images = req.files;
+      var questionImage = "";
+      var optionAImage = "";
+      var optionBImage = "";
+      var optionCImage = "";
+      var optionDImage = "";
+      var Image = "";
+
+      images.forEach((image) => {
+        switch (image.originalname) {
+          case "questionImage":
+            questionImage = image.buffer.toString("base64");
+            break;
+          case "optionAImage":
+            optionAImage = image.buffer.toString("base64");
+            break;
+          case "optionBImage":
+            optionBImage = image.buffer.toString("base64");
+            break;
+          case "optionCImage":
+            optionCImage = image.buffer.toString("base64");
+            break;
+          case "optionDImage":
+            optionDImage = image.buffer.toString("base64");
+            break;
+        }
+      });
+      var entities = [
+        {
+          SubTopicID: master.SubTopicID,
+          QuestionID: master.QuestionID,
+          Question: master.Question,
+          OptionA: master.OptionA,
+          OptionB: master.OptionB,
+          OptionC: master.OptionC,
+          OptionD: master.OptionD,
+          CorrectAnswer: master.CorrectAnswer,
+          DifficultyLevelID: master.DifficultyLevelID,
+          Query: master.Query,
+          Question_Image: questionImage,
+          OptionA_Image: optionAImage,
+          OptionB_Image: optionBImage,
+          OptionC_Image: optionCImage,
+          OptionD_Image: optionDImage,
+        },
+      ];
+
+      const masterTable = dataAccess.generateTable(
+        [
+          { name: "SubTopicID", type: dataAccess.mssql.VarChar(10) },
+          { name: "QuestionID", type: dataAccess.mssql.VarChar(10) },
+          { name: "Question", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionA", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionB", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionC", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionD", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "CorrectAnswer", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          {
+            name: "DifficultyLevelID",
+            type: dataAccess.mssql.TYPES.VarChar(MAX),
+          },
+          { name: "Query", type: dataAccess.mssql.VarChar(10) },
+          { name: "Question_Image", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionA_Image", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionB_Image", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionC_Image", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+          { name: "OptionD_Image", type: dataAccess.mssql.TYPES.VarChar(MAX) },
+        ],
+        entities
+      );
+      const result = await dataAccess.execute(
+        `[dbo].[Usp_InsertUpdate_MCQQuestion]`,
+        [{ name: "TVP", value: masterTable }]
+      );
+      console.log("Success");
+      res.json(result.recordset);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
+  }
+);
+
+// Function to convert file to Base64
+const convertToBase64 = (file) => {
+  const reader = new FileReader();
+
+  reader.readAsDataURL(file);
+  reader.onloadend = () => {
+    console.log(reader.result.toString("base64"));
+    setFileBase64(reader.result);
+  };
+  reader.onerror = (error) => {
+    console.error("Error reading file:", error);
+  };
+};
+
+router.post(
+  "/mcqQuestionsALL_Crud",
+  upload.array("images"),
+  async (req, res) => {
+    try {
+      const master = req.body;
+      console.log(req.body);
+      const result = await dataAccess.execute(
+        `[dbo].[Usp_InsertUpdateDelete_MCQQuestionsALL]`,
+        [
+          { name: "Query", value: master.query },
+          { name: "QuestionID", value: master.questionID },
+        ]
+      );
+      const newAdmins = result.recordset;
+      res.json(newAdmins);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
+  }
+);
+
+router.post("/ParaGroupQuestionCrud", async (req, res) => {
+  try {
+    debugger;
+    const master = req.body;
+    const result = await dataAccess.execute(`[dbo].[Usp_GroupQuestion_Crud]`, [
+      { name: "Flag", value: master.flag },
+      { name: "ParagraphID", value: master.paragraphID },
+      { name: "ParagraphDescription", value: master.paragraphDescription },
+      { name: "Image", value: master.image },
+      { name: "JSON", value: master.json },
+    ]);
+    const newAdmins = result.recordset;
+
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.get("/getProgramCodes", async (req, res) => {
+  try {
+    const result = await dataAccess.execute(`[dbo].[Usp_GetProgramCodes]`);
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.get("/getModulesByTechnologyID/:id", async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_GetCascadingDropDownValues]`,
+      [
+        { name: "TableName", value: "Module" },
+        { name: "ID", value: req.params.id },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.get("/getTopicsByModuleID/:id", async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_GetCascadingDropDownValues]`,
+      [
+        { name: "ID", value: req.params.id },
+        { name: "TableName", value: "Topic" },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.get("/getSubtopicsByTopicID/:id", async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_GetCascadingDropDownValues]`,
+      [
+        { name: "ID", value: req.params.id },
+        { name: "TableName", value: "SubTopic" },
+      ]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.get("/getSearchResults", async (req, res) => {
+  try {
+    const tableName = req.params.tableName;
+    const result = await dataAccess.execute(
+      `[dbo].[Usp_GetCascadingDropDownValues]`,
+      [{ name: "TableName", value: tableName }]
+    );
+    const newAdmins = result.recordset;
+    res.json(newAdmins);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/fileUploadTechnology", async (req, res) => {
+  try {
+    const master = req.body;
+    const masterTable = dataAccess.generateTable(
+      [
+        { name: "ProgramCode", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Technology", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Description", type: dataAccess.mssql.TYPES.VarChar(500) },
+      ],
+      master
+    );
+    console.log("fileUploadTechnology");
+    console.log(masterTable);
+    const result = await dataAccess.execute(
+      `[dbo].[USP_READEXCEL_Technology]`,
+      [{ name: "TVP", value: masterTable }]
+    );
+    const newEmployees = result.recordset;
+    res.json(newEmployees);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/fileUploadModule", async (req, res) => {
+  try {
+    const master = req.body;
+    const masterTable = dataAccess.generateTable(
+      [
+        { name: "Technology", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Module", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Description", type: dataAccess.mssql.TYPES.VarChar(500) },
+      ],
+      master
+    );
+
+    const result = await dataAccess.execute(`[dbo].[USP_READEXCEL_Module]`, [
+      { name: "TVP", value: masterTable },
+    ]);
+    const newEmployees = result.recordset;
+    res.json(newEmployees);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/fileUploadTopic", async (req, res) => {
+  try {
+    const master = req.body;
+    const masterTable = dataAccess.generateTable(
+      [
+        { name: "Technology", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Module", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Topic", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Description", type: dataAccess.mssql.TYPES.VarChar(500) },
+      ],
+      master
+    );
+    console.log(masterTable);
+    const result = await dataAccess.execute(`[dbo].[USP_READEXCEL_Topic]`, [
+      { name: "TVP", value: masterTable },
+    ]);
+    const newEmployees = result.recordset;
+    res.json(newEmployees);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/fileUploadSubTopic", async (req, res) => {
+  try {
+    const master = req.body;
+    const masterTable = dataAccess.generateTable(
+      [
+        { name: "Technology", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Module", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Topic", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "SubTopic", type: dataAccess.mssql.TYPES.VarChar(500) },
+      ],
+      master
+    );
+
+    const result = await dataAccess.execute(`[dbo].[USP_READEXCEL_SubTopic]`, [
+      { name: "TVP", value: masterTable },
+    ]);
+    const newEmployees = result.recordset;
+    res.json(newEmployees);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+router.post("/fileUploadMCQQuestions", async (req, res) => {
+  try {
+    const master = req.body;
+    const masterTable = dataAccess.generateTable(
+      [
+        { name: "Technology", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Module", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "Topic", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "SubTopic", type: dataAccess.mssql.TYPES.VarChar(500) },
+        {
+          name: "QuestionDescription",
+          type: dataAccess.mssql.TYPES.VarChar(500),
+        },
+        { name: "OptionA", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "OptionB", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "OptionC", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "OptionD", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "CorrectAnswer", type: dataAccess.mssql.TYPES.VarChar(500) },
+        { name: "DifficultyLevel", type: dataAccess.mssql.TYPES.Int },
+      ],
+      master
+    );
+    console.log(masterTable);
+    const result = await dataAccess.execute(
+      `[dbo].[USP_READEXCEL_MCQQuestionsALL]`,
+      [{ name: "TVP", value: masterTable }]
+    );
+    const newEmployees = result.recordset;
+    res.json(newEmployees);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+module.exports ={questiondb:router};

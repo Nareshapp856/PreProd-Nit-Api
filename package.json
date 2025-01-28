@@ -1,0 +1,31 @@
+{
+  "name": "sampleapi",
+  "version": "1.0.0",
+  "description": "A sample Node.js API",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "build": "node build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
+    "compression": "^1.7.5",
+    "cors": "^2.8.5",
+    "date-fns": "^3.6.0",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "mssql": "^11.0.1",
+    "multer": "^1.4.5-lts.1",
+    "node-cache": "^5.1.2",
+    "nodemailer": "^6.9.13"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
